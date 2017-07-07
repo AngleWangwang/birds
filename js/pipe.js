@@ -5,10 +5,12 @@ function Pipe(option){
     this.pipeH=this.pipeImgUp.height;
     this.pipeW=this.pipeImgUp.width;
     this.pipeX=option.pipeX;
-    this.pipeY=option.pipeY;
+    this.pipeY=0;
     this.space=150;
 
+    
     this.pipeSpeed=2;
+    this.random();
 }
 Pipe.prototype={
     drawPipe:function(){
@@ -28,6 +30,10 @@ Pipe.prototype={
         if(this.pipeX<-this.pipeW){
             this.pipeX+=6*3*this.pipeW;
         }
+        this.random();
     },
+    random:function(){
+        this.pipeY=-(Math.random() * 250 + 120);
+    }
    
 }

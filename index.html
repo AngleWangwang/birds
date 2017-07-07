@@ -70,7 +70,7 @@
                     /*pipeX计算方法是每个管道加上总共是3倍的管道宽
                     *pipeY:经过大致推算:陆地加下管道最少150;中间空隙150;然后推算出-370<pipeY<-120的随机数
                     */
-                    var pipe = new Pipe({ "ctx": ctx, "pipeImgUp": pipeImgUp, "pipeImgDown": pipeImgDown, "pipeX": 300 + 52 * 3 * i, "pipeY": -(Math.random() * 250 + 120) });
+                    var pipe = new Pipe({ "ctx": ctx, "pipeImgUp": pipeImgUp, "pipeImgDown": pipeImgDown, "pipeX": 300 + 52 * 3 * i });
                     pipeArr.push(pipe);
                 }
 
