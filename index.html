@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        canvas {
+            border: 1px solid saddlebrown;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas width="800" height="600"></canvas>
+    <script src="./js/sky.js"></script>
+    <script src="./js/birds.js"></script>
+    <script src="./js/land.js"></script>
+    <script src="./js/pipe.js"></script>
+    <script>
+        var c = document.querySelector("canvas");
+        var ctx = c.getContext("2d");
+        {
+            /*初始化*/
+            var canvasX = 100;
+            var canvasY = 100;
+            var gameStartT = new Date();
+            var gameOverT = 0;
+            var isRunning = false;
+            var startT = new Date();
+            var endT = new Date();
+        }
+
+        /*创建图片函数*/
+        function CreatImg(arr, callback) {
+            var imgList = [];
+            for (var i = 0; i < arr.length; i++) {
+                var img = new Image();
+                img.src = "./images/" + arr[i] + ".png";
+                imgList[arr[i]] = img;
+            }
+            return callback(imgList);
+        };
+        var arr = ["birds", "land", "sky", "pipeUp", "pipeDown"];
+        CreatImg(arr, function (imgList) {
+
+            var skyImg = imgList.sky;
+            var birdImg = imgList.birds;
+            var landImg = imgList.land;
+            var pipeImgUp = imgList.pipeUp;
+            var pipeImgDown = imgList.pipeDown;
+
+            window.onload = function () {
+                /*创建天空对象*/
+                var sky1 = new Sky({ "ctx": ctx, "skyImg": skyImg, "skyX": 0 });
+                var sky2 = new Sky({ "ctx": ctx, "skyImg": skyImg, "skyX": skyImg.width });
+                /*创建小鸟对象*/
+                var bird = new Bird({ "ctx": ctx, "birdImg": birdImg, "canvasX": 100, "canvasY": 100 });
+                /*创建陆地对象*/
+                var landArr = [];
+                for (var i = 0; i < 4; i++) {
+                    var land = new Land({ "ctx": ctx, "landImg": landImg, "c": c, "landX": landImg.width * i });
+                    landArr.push(land);
+                }
+                /*创建管道*/
+                var pipeArr = [];
+                for (var i = 0; i < 6; i++) {
+                    /*pipeX计算方法是每个管道加上总共是3倍的管道宽
+                    *pipeY:经过大致推算:陆地加下管道最少150;中间空隙150;然后推算出-370<pipeY<-120的随机数
+                    */
+                    var pipe = new Pipe({ "ctx": ctx, "pipeImgUp": pipeImgUp, "pipeImgDown": pipeImgDown, "pipeX": 300 + 52 * 3 * i, "pipeY": -(Math.random() * 250 + 120) });
+                    pipeArr.push(pipe);
+                }
+
+                function fly() {
+                    /*计算时间差*/
+                    startT = new Date();
+                    var temT = startT - endT;
+                    endT = new Date();
+                    ctx.clearRect(0, 0, c.width, c.height);
+
+                    ctx.beginPath();
+                    /*绘制天空*/
+                    sky1.drawSky();
+                    sky2.drawSky();
+
+                    /*绘制小鸟*/
+                    bird.drawBird(temT);
+
+                    /*绘制管道*/
+                    for (var i = 0; i < pipeArr.length; i++) {
+                        pipeArr[i].drawPipe();
+                    }
+                    /*绘制陆地*/
+                    for (var i = 0; i < landArr.length; i++) {
+                        landArr[i].drawLand();
+                    }
+                    /*计算游戏用时长*/
+                    gameOverT = new Date();
+                    var gapT = (gameOverT - gameStartT) / 1000;
+                    var hour = Math.floor(gapT / 3600);
+                    var minute = Math.floor(gapT % 3600 / 60);
+                    var second = Math.floor(gapT % 60);
+                    ctx.fillText("您已经坚持游戏" + hour + "时" + minute + "分" + second + "秒", 60, 60);
+
+                    /*判断小鸟是否触碰天地*/
+                    if (bird.canvasY < 0 || bird.canvasY > c.height - landImg.height - birdImg.height) {
+                        ctx.font = "30px 黑体 red";
+                        ctx.fillText("Game over", c.width / 2 - ctx.measureText("Game over").width / 2, c.height / 2 - 15);
+                        return;
+                    };
+                    /*判断小鸟是否在管道路径中*/
+                    if (ctx.isPointInPath(bird.canvasX + bird.birdW / 2, bird.canvasY + bird.birdH / 2)) {
+                        ctx.font = "30px 黑体 ";
+                        ctx.fillText("Game over", c.width / 2 - ctx.measureText("Game over").width / 2, c.height / 2 - 15);
+                        return;
+                    };
+                    if(isRunning){
+                        window.requestAnimationFrame(fly);
+                    }
+                }
+                fly();
+                ctx.font = "30px 黑体 ";
+                ctx.fillText("点击开始", 300, 200);
+                c.onclick = function () {
+                    /*随便给的一个数字*/
+                    if (!isRunning) {
+                        isRunning = true;
+                        endT = new Date();
+                        fly();
+                    } else {
+                        /*单击鼠标时,小鸟上跳*/
+                        bird.birdSpeed = -0.2;
+                    }
+
+
+                }
+
+            };
+        })
+    </script>
+</body>
+
+</html>
